@@ -1,0 +1,11 @@
+Create: curl -H "Content-Type: application/json" -X POST -d '{"Ticker":"Test", "Sector":"Healthcare", "Shares Outstanding":555, "Earnings Date":"Jul 15 2019", "Country":"USA", "Industry":"Hospitals", "Company":"Tester"}' http://localhost:8080/create
+
+Read: curl http://localhost:8080/read?company_name="Tester"
+
+Update: curl http://localhost:8080/update?ticker="Test"&country="CA"
+
+Delete: curl http://localhost:8080/delete?ticker="Test"
+
+Summary: curl http://localhost:8080/summary?ticker="BRLI"
+
+Portfolio: curl http://localhost:8080/portfolio?industry="Hospitals"
