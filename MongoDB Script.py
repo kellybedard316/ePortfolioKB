@@ -1,4 +1,4 @@
-#Kelly Bedard Final Project
+#Kelly Bedard
 
 import json
 from bson import json_util
