@@ -7,100 +7,162 @@ import datetime
 import bottle
 from bottle import delete, route, run, request, abort
 from pymongo import MongoClient
-
+import sys
+from sys import exit
 
 connection = MongoClient('localhost', 27017)
 db = connection['market']
 collection = db['stocks']
 
-def createDocument(document):
-		try:
+def createDocument():
+	print("Do you want to create a new document (Y/N)?")
+	answer = raw_input()
+	try:
+		if answer == "Y" or answer == "y":
 			document = input("What document(s) do you wish to create? (include quotes and brackets) ") #take user input for documents for creation
 			result = collection.save(document)
 			return "Successfully created document."
-		except:
-			return "Document not inserted."
+	except:
+		return "Document not inserted."
+
 
 def readDocument():
+	print("Do you want to read a document (Y/N)?")
+	answer = raw_input()
 	try:
-		query = input("What document do you wish to read? (include quotes and brackets) ") #take user input for search criteria
-		found = collection.find(query)
-		if found.count() > 0:
-			for x in found:
-				readDoc = json.dumps(x, default=json_util.default)
-				return readDoc
-		else:
-			return "Not Found"
+		if answer == "Y" or answer == "y":
+			query = input("What document do you wish to read? (include quotes and brackets) ") #take user input for search criteria
+			found = collection.find(query)
+			if found.count() > 0:
+				for x in found:
+					readDoc = json.dumps(x, default=json_util.default)
+					return readDoc
+			else:
+				return "Not Found"
 	except:
 		return 
 
+
 def updateDocument():
-		try:
-			criteria = input("Which document(s) do you want to update? (include quotes and brackets) ") #take user input for search criteria
-			newValue = input("Enter the new value(s): ") #take user input for value to update
-			updatedValue = {"$set":newValue} #set value to update
-			update = collection.update(criteria, updatedValue) #implement both the search and the update values
-			updateDoc = json.dumps(update, default=json_util.default)
-			return updateDoc
-		except:
-			return "Nothing was updated."
+	print("Do you want to update a document (Y/N)?")
+	answer = raw_input()
+	try:
+		if answer == "Y" or answer == "y":
+				criteria = input("Which document(s) do you want to update? (include quotes and brackets) ") #take user input for search criteria
+				newValue = input("Enter the new value(s): ") #take user input for value to update
+				updatedValue = {"$set":newValue} #set value to update
+				update = collection.update(criteria, updatedValue) #implement both the search and the update values
+				updateDoc = json.dumps(update, default=json_util.default)
+				return updateDoc
+	except:
+		return "Nothing was updated."
 		
 def deleteDocument():
-		try:
+	print("Do you want to delete a document (Y/N)?")
+	answer = raw_input()
+	try:
+		if answer == "Y" or answer == "y":
 			remove = input("What do you want to delete? (include quotes) ") #take user input for deletion criteria
-			delete = collection.delete_one(remove)
+			delete = collection.delete_many(remove)
 			count = delete.deleted_count
 			deleteDoc = json.dumps(count, default=json_util.default)
 			return  deleteDoc + " document(s) deleted."
-
-		except:
-			return "None Deleted"
+	except:
+		return "None Deleted"
 			
 def readNumberDocument():
+	print("Do you want to see how many entries fall within a range for 50-Day Simple Moving Average (Y/N)?")
+	answer = raw_input()
 	try:
-		low = input("Enter low: ") #take user input foe low value
-		high = input("Enter high: ") #take user input foe high value
-		found = collection.find({"50-Day Simple Moving Average":{"$lte":high, "$gte":low}})
-		count = found.count()
-		readDoc = json.dumps(count, default=json_util.default)
-		return readDoc + " documents found."
+		if answer == "Y" or answer == "y":
+			low = input("Enter low: ") #take user input foe low value
+			high = input("Enter high: ") #take user input foe high value
+			found = collection.find({"50-Day Simple Moving Average":{"$lte":high, "$gte":low}})
+			count = found.count()
+			readDoc = json.dumps(count, default=json_util.default)
+			return readDoc + " documents found."
 
 	except:
 		return "Nothing found."
 	
 def readStringDocument():
+	print("Do you want to pull the Ticker values based on industry (Y/N)?")
+	answer = raw_input()
 	try:
-		industry = input("Enter industry (include quotes): ") #take user input for industry value
-		found = collection.find({"Industry":industry},{"Ticker":1})
-		for x in found:
-			readDoc = json.dumps(x, default=json_util.default)
-			print(readDoc)
+		if answer == "Y" or answer == "y":
+			industry = input("Enter industry (include quotes): ") #take user input for industry value
+			found = collection.find({"Industry":industry},{"Ticker":1})
+			for x in found:
+				readDoc = json.dumps(x, default=json_util.default)
+				print(readDoc)
 
 	except:
 		return "Nothing found."
 
 def aggregateDocument():
+	print("Do you want to pull the outstanding share summs per industry based on sector (Y/N)?")
+	answer = raw_input()
 	try:
-		sector = input("Enter sector (include quotes): ") #take user input for sector value
-		pipeline = [{"$match":{"Sector":sector}},
-               {"$group":{"_id":"$Industry",
-    	         "outstandingShares":{"$sum":"$Shares Outstanding"}}}]
-		aggregate = list(collection.aggregate(pipeline))
-		print(aggregate)
+		if answer == "Y" or answer == "y":
+			sector = input("Enter sector (include quotes): ") #take user input for sector value
+			pipeline = [{"$match":{"Sector":sector}},
+								 {"$group":{"_id":"$Industry",
+								 "outstandingShares":{"$sum":"$Shares Outstanding"}}}]
+			aggregate = list(collection.aggregate(pipeline))
+			print(aggregate)
 
 	except:
 		return "No results."
 
-def main():
-	myDocument = {"Ticker":"Test","Volume":555}
-	
-	print createDocument(myDocument) 
-	print readDocument()
-	print updateDocument()
-	print deleteDocument()
-	print readNumberDocument()
-	print readStringDocument()
-	print aggregateDocument()
+def menu():
+	selection = input("What would you like to do?\n"
+		"1: Create Document\n"
+		"2: Read Document\n"
+		"3: Update Document\n"
+		"4: Delete Document\n"
+		"5: Count 50-Day Simple Moving Average Entries Within a Range\n"
+		"6: View Tickers per Industry\n"
+		"7: View Outstanding Shaers per Industry\n"
+		"8: Quit\n"
+		"Enter Selection: ")	
+	return selection
+
+def main():	
+	result = True
+	rest = raw_input("Would you like to start the RESTful API Service? (Y/N)")
+	if rest == "y" or rest == "Y":
+		pass
+	if rest == "n" or rest == "N":
+		while result == True:
+			option = menu()
+			if option == 1:
+				print createDocument() 
+			if option == 2:
+				print readDocument()
+			if option == 3:
+				print updateDocument()
+			if option == 4:
+				print deleteDocument()
+			if option == 5:
+				print readNumberDocument()
+			if option == 6:
+				print readStringDocument()
+			if option == 7:
+				print aggregateDocument()
+			if option == 8:
+				print("Quitting")
+				result = False
+				exit()
+			if option < 1 or option > 8:
+				print("Invalid Selection.  Exiting")
+				result = False
+				exit()	
+			newselection = raw_input("Would you like to do anything else? (Y/N) ")
+			if newselection == "y" or newselection == "Y":
+				print option
+			if newselection == "n" or newselection == "N":
+				result = False
+				exit()
 
 main()
 
@@ -215,4 +277,7 @@ def summary():
 if __name__ == '__main__':
 	#app.run(debug=True)
 	run(host='localhost', port=8080)
+	
+	
+
 
