@@ -15,20 +15,21 @@ db = connection['market']
 collection = db['stocks']
 
 def createDocument():
-	print("Do you want to create a new document (Y/N)?")
-	answer = raw_input()
-	try:
-		if answer == "Y" or answer == "y":
-			document = input("What document(s) do you wish to create? (include quotes and brackets) ") #take user input for documents for creation
-			result = collection.save(document)
-			return "Successfully created document."
-	except:
-		return "Document not inserted."
-
+	answer = raw_input("Do you want to create a new document (Y/N)?")
+	if answer == "Y" or answer == "y":
+		document = input("What document(s) do you wish to create? (include quotes and brackets) ") #take user input for documents for creation
+		try:
+			confirm = raw_input("Are you sure? ")
+			if confirm == "Y" or confirm == "y":			
+				result = collection.save(document)
+				return "Successfully created document."
+			else:
+				return "Nothing created."
+		except:
+			return "Document not inserted."
 
 def readDocument():
-	print("Do you want to read a document (Y/N)?")
-	answer = raw_input()
+	answer = raw_input("Do you want to read a document (Y/N)?")
 	try:
 		if answer == "Y" or answer == "y":
 			query = input("What document do you wish to read? (include quotes and brackets) ") #take user input for search criteria
@@ -44,35 +45,40 @@ def readDocument():
 
 
 def updateDocument():
-	print("Do you want to update a document (Y/N)?")
-	answer = raw_input()
-	try:
-		if answer == "Y" or answer == "y":
-				criteria = input("Which document(s) do you want to update? (include quotes and brackets) ") #take user input for search criteria
-				newValue = input("Enter the new value(s): ") #take user input for value to update
-				updatedValue = {"$set":newValue} #set value to update
-				update = collection.update(criteria, updatedValue) #implement both the search and the update values
-				updateDoc = json.dumps(update, default=json_util.default)
-				return updateDoc
-	except:
-		return "Nothing was updated."
+	answer = raw_input("Do you want to update a document (Y/N)? ")
+	if answer == "Y" or answer == "y":
+		criteria = input("Which document(s) do you want to update? (include quotes and brackets) ") #take user input for search criteria
+		newValue = input("Enter the new value(s): ") #take user input for value to update
+		try:
+			confirm = raw_input("Are you sure? ")
+			if confirm == "Y" or confirm == "y":
+					updatedValue = {"$set":newValue} #set value to update
+					update = collection.update(criteria, updatedValue) #implement both the search and the update values
+					updateDoc = json.dumps(update, default=json_util.default)
+					return updateDoc
+			else:
+				return "Nothing updated."
+		except:
+			return "Nothing was updated."
 		
 def deleteDocument():
-	print("Do you want to delete a document (Y/N)?")
-	answer = raw_input()
-	try:
-		if answer == "Y" or answer == "y":
-			remove = input("What do you want to delete? (include quotes) ") #take user input for deletion criteria
-			delete = collection.delete_many(remove)
-			count = delete.deleted_count
-			deleteDoc = json.dumps(count, default=json_util.default)
-			return  deleteDoc + " document(s) deleted."
-	except:
-		return "None Deleted"
-			
+	answer = raw_input("Do you want to delete a document (Y/N)? ")
+	if answer == "Y" or answer == "y":
+		remove = input("What do you want to delete? (include quotes) ") #take user input for deletion criteria
+		try:
+			confirm = raw_input("Are you sure? ")
+			if confirm == "Y" or confirm == "y":
+					delete = collection.delete_many(remove)
+					count = delete.deleted_count
+					deleteDoc = json.dumps(count, default=json_util.default)
+					return  deleteDoc + " document(s) deleted."
+			else:
+				return "Nothing deleted."
+		except:
+			return "None Deleted"
+
 def readNumberDocument():
-	print("Do you want to see how many entries fall within a range for 50-Day Simple Moving Average (Y/N)?")
-	answer = raw_input()
+	answer = raw_input("Do you want to see how many entries fall within a range for 50-Day Simple Moving Average (Y/N)? ")
 	try:
 		if answer == "Y" or answer == "y":
 			low = input("Enter low: ") #take user input foe low value
@@ -86,8 +92,7 @@ def readNumberDocument():
 		return "Nothing found."
 	
 def readStringDocument():
-	print("Do you want to pull the Ticker values based on industry (Y/N)?")
-	answer = raw_input()
+	answer = raw_input("Do you want to pull the Ticker values based on industry (Y/N)? ")
 	try:
 		if answer == "Y" or answer == "y":
 			industry = input("Enter industry (include quotes): ") #take user input for industry value
@@ -100,8 +105,7 @@ def readStringDocument():
 		return "Nothing found."
 
 def aggregateDocument():
-	print("Do you want to pull the outstanding share summs per industry based on sector (Y/N)?")
-	answer = raw_input()
+	answer = raw_input("Do you want to pull the outstanding share summs per industry based on sector (Y/N)? ")
 	try:
 		if answer == "Y" or answer == "y":
 			sector = input("Enter sector (include quotes): ") #take user input for sector value
@@ -129,10 +133,10 @@ def menu():
 
 def main():	
 	result = True
-	rest = raw_input("Would you like to start the RESTful API Service? (Y/N)")
+	rest = raw_input("Would you like to start the RESTful API Service? (Y/N) ")
 	if rest == "y" or rest == "Y":
 		pass
-	if rest == "n" or rest == "N":
+	if rest != "y" or rest != "Y":
 		while result == True:
 			option = menu()
 			if option == 1:
@@ -154,12 +158,10 @@ def main():
 				result = False
 				exit()
 			if option < 1 or option > 8:
-				print("Invalid Selection.  Exiting")
-				result = False
-				exit()	
-			newselection = raw_input("Would you like to do anything else? (Y/N) ")
+				print("Invalid Selection.")
+			newselection = raw_input("Would you like to continue? (Y/N) ")
 			if newselection == "y" or newselection == "Y":
-				print option
+				print option 
 			if newselection == "n" or newselection == "N":
 				result = False
 				exit()
