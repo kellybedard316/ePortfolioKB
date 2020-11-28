@@ -19,7 +19,7 @@ def createDocument():
 	if answer == "Y" or answer == "y":
 		document = input("What document(s) do you wish to create? (include quotes and brackets) ") #take user input for documents for creation
 		try:
-			confirm = raw_input("Are you sure? ")
+			confirm = raw_input("Are you sure? ") #take user input to confirm action
 			if confirm == "Y" or confirm == "y":			
 				result = collection.save(document)
 				return "Successfully created document."
@@ -50,7 +50,7 @@ def updateDocument():
 		criteria = input("Which document(s) do you want to update? (include quotes and brackets) ") #take user input for search criteria
 		newValue = input("Enter the new value(s): ") #take user input for value to update
 		try:
-			confirm = raw_input("Are you sure? ")
+			confirm = raw_input("Are you sure? ") #take user input to confirm action
 			if confirm == "Y" or confirm == "y":
 					updatedValue = {"$set":newValue} #set value to update
 					update = collection.update(criteria, updatedValue) #implement both the search and the update values
@@ -66,7 +66,7 @@ def deleteDocument():
 	if answer == "Y" or answer == "y":
 		remove = input("What do you want to delete? (include quotes) ") #take user input for deletion criteria
 		try:
-			confirm = raw_input("Are you sure? ")
+			confirm = raw_input("Are you sure? ") #take user input to confirm action
 			if confirm == "Y" or confirm == "y":
 					delete = collection.delete_many(remove)
 					count = delete.deleted_count
@@ -78,12 +78,13 @@ def deleteDocument():
 			return "None Deleted"
 
 def readNumberDocument():
-	answer = raw_input("Do you want to see how many entries fall within a range for 50-Day Simple Moving Average (Y/N)? ")
+	answer = raw_input("Do you want to see how many documents fall within a chosen range (Y/N)? ")
 	try:
 		if answer == "Y" or answer == "y":
-			low = input("Enter low: ") #take user input foe low value
-			high = input("Enter high: ") #take user input foe high value
-			found = collection.find({"50-Day Simple Moving Average":{"$lte":high, "$gte":low}})
+			field = input("What field do you want to search? (include quotes) ") #take user input to specify field to query
+			low = input("Enter low: ") #take user input for low value
+			high = input("Enter high: ") #take user input for high value
+			found = collection.find({field:{"$lte":high, "$gte":low}}) #apply user input to conduct query
 			count = found.count()
 			readDoc = json.dumps(count, default=json_util.default)
 			return readDoc + " documents found."
@@ -92,11 +93,14 @@ def readNumberDocument():
 		return "Nothing found."
 	
 def readStringDocument():
-	answer = raw_input("Do you want to pull the Ticker values based on industry (Y/N)? ")
+	answer = raw_input("Do you want to pull values based on a specific field (Y/N)? ")
 	try:
 		if answer == "Y" or answer == "y":
-			industry = input("Enter industry (include quotes): ") #take user input for industry value
-			found = collection.find({"Industry":industry},{"Ticker":1})
+			field = input("What field do you want to search? (include quotes) ") #take user input to specify field to search
+			value = input("What value do you want to search? (include quotes) ") #take user input to specify the value to search 
+			output = input("What data do you want to see? (include quotes) ") 
+			sort = input("Sort ascending: 1 or descending: -1? ") #take user input to determing sorting
+			found = collection.find({field:value},{output:sort})
 			for x in found:
 				readDoc = json.dumps(x, default=json_util.default)
 				print(readDoc)
@@ -105,13 +109,18 @@ def readStringDocument():
 		return "Nothing found."
 
 def aggregateDocument():
-	answer = raw_input("Do you want to pull the outstanding share summs per industry based on sector (Y/N)? ")
+	answer = raw_input("Do you want to aggregate a pipeline (Y/N)? ")
 	try:
 		if answer == "Y" or answer == "y":
-			sector = input("Enter sector (include quotes): ") #take user input for sector value
-			pipeline = [{"$match":{"Sector":sector}},
-								 {"$group":{"_id":"$Industry",
-								 "outstandingShares":{"$sum":"$Shares Outstanding"}}}]
+			field = input("What field do you want to search? (include quotes) ") #take user input to specify field to search
+			value = input("What value do you want to search? (include quotes) ") #take user input to specify the value to search 
+			groupId = input("What field would you like to group by? (include $ and quotes) ") #take user input to specify what field should be grouped
+			alias = input("What value do you want to set for the aggregation results? (include quotes) ") #take user input to set variable output
+			action = input("Select an option: $sum / $avg / $min / $max (include quotes) ") #take user input to specify how to handle data
+			agg = input("What value would you like to aggregate? (include $ and quotes) ") #take user input to specify where to apply the action
+			pipeline = [{"$match":{field:value}},
+								 {"$group":{"_id":groupId,
+								 alias:{action:agg}}}]
 			aggregate = list(collection.aggregate(pipeline))
 			print(aggregate)
 
@@ -124,9 +133,9 @@ def menu():
 		"2: Read Document\n"
 		"3: Update Document\n"
 		"4: Delete Document\n"
-		"5: Count 50-Day Simple Moving Average Entries Within a Range\n"
-		"6: View Tickers per Industry\n"
-		"7: View Outstanding Shaers per Industry\n"
+		"5: Count docuemnts with data in a chosen range\n"
+		"6: View data of chosen field and value\n"
+		"7: Aggregate Pipeline\n"
 		"8: Quit\n"
 		"Enter Selection: ")	
 	return selection
@@ -136,7 +145,7 @@ def main():
 	rest = raw_input("Would you like to start the RESTful API Service? (Y/N) ")
 	if rest == "y" or rest == "Y":
 		pass
-	if rest != "y" or rest != "Y":
+	if rest == "n" or rest == "N":
 		while result == True:
 			option = menu()
 			if option == 1:
